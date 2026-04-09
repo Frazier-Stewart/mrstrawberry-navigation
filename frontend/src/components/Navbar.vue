@@ -1,0 +1,207 @@
+<template>
+  <header class="navbar">
+    <div class="navbar__inner">
+      <RouterLink to="/" class="navbar__logo">导航站</RouterLink>
+
+      <div class="navbar__actions">
+        <!-- 头像下拉 -->
+        <div class="avatar-menu" ref="menuRef">
+          <button class="avatar-btn" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen">
+            <span class="avatar-btn__circle">{{ initial }}</span>
+            <svg class="avatar-btn__caret" :class="{ 'avatar-btn__caret--open': menuOpen }"
+              width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <Transition name="dropdown">
+            <div v-if="menuOpen" class="dropdown">
+              <div class="dropdown__header">
+                <span class="dropdown__email">{{ auth.user?.email ?? '...' }}</span>
+              </div>
+              <div class="dropdown__divider" />
+              <RouterLink to="/profile" class="dropdown__item" @click="menuOpen = false">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
+                  <path d="M2 13c0-3 2-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                个人中心
+              </RouterLink>
+              <div class="dropdown__divider" />
+              <button class="dropdown__item dropdown__item--danger" @click="handleLogout">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                退出登录
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+const auth = useAuthStore()
+const router = useRouter()
+const menuOpen = ref(false)
+const menuRef = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  if (!auth.user) auth.fetchMe()
+  document.addEventListener('click', onOutsideClick)
+})
+onUnmounted(() => document.removeEventListener('click', onOutsideClick))
+
+function onOutsideClick(e: MouseEvent) {
+  if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
+    menuOpen.value = false
+  }
+}
+
+const initial = computed(() => {
+  const email = auth.user?.email ?? ''
+  return email.charAt(0).toUpperCase() || '?'
+})
+
+function handleLogout() {
+  menuOpen.value = false
+  auth.logout()
+  router.push('/login')
+}
+</script>
+
+<style scoped>
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.navbar__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__logo {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-heading);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Avatar button */
+.avatar-menu {
+  position: relative;
+}
+
+.avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-btn);
+  transition: background-color var(--transition);
+}
+.avatar-btn:hover { background: var(--color-surface-alt); }
+
+.avatar-btn__circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-btn__caret {
+  color: var(--color-tertiary);
+  transition: transform var(--transition);
+}
+.avatar-btn__caret--open { transform: rotate(180deg); }
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdown__header {
+  padding: 12px 16px;
+}
+
+.dropdown__email {
+  font-size: 13px;
+  color: var(--color-tertiary);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown__divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--color-body);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition);
+  text-align: left;
+}
+.dropdown__item:hover { background: var(--color-surface-alt); }
+.dropdown__item--danger { color: var(--color-error); }
+.dropdown__item--danger:hover { background: #fff5f5; }
+
+/* Transition */
+.dropdown-enter-active, .dropdown-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.dropdown-enter-from, .dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>
