@@ -7,6 +7,25 @@
       </RouterLink>
 
       <div class="navbar__actions">
+        <!-- 视图切换按钮 -->
+        <button 
+          class="view-toggle-btn" 
+          @click="store.toggleViewMode()" 
+          :title="store.isSimpleMode ? '切换到正常版' : '切换到简化版'"
+        >
+          <!-- 正常视图显示列表图标（点击切换到简化版） -->
+          <svg v-if="!store.isSimpleMode" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <!-- 简化视图显示网格图标（点击切换到正常版） -->
+          <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+        </button>
+        
         <!-- 头像下拉 -->
         <div class="avatar-menu" ref="menuRef">
           <button class="avatar-btn" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen">
@@ -49,9 +68,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useBookmarksStore } from '@/stores/bookmarks'
 import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
+const store = useBookmarksStore()
 const router = useRouter()
 const menuOpen = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -230,6 +251,26 @@ function handleLogout() {
 .dropdown__item:hover { background: var(--color-surface-alt); }
 .dropdown__item--danger { color: var(--color-error); }
 .dropdown__item--danger:hover { background: #fff5f5; }
+
+/* View toggle button */
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--color-tertiary);
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-right: 8px;
+}
+.view-toggle-btn:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-primary);
+}
 
 /* Transition */
 .dropdown-enter-active, .dropdown-leave-active {
