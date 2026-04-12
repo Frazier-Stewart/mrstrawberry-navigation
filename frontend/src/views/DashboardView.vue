@@ -92,6 +92,12 @@
       :loading="confirmLoading"
       @confirm="handleConfirm"
     />
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer__text">
+        Copyright © 2020-{{ currentYear }} 快刀切草莓君 | 互联网ICP备案：闽ICP备18004703号-1
+      </p>
+    </footer>
   </div>
 </template>
 
@@ -114,6 +120,9 @@ import type { Category } from '@/api/categories'
 const store = useBookmarksStore()
 
 onMounted(() => store.fetchAll())
+
+// ── Current year for footer ───────────────────────────────────────────────────
+const currentYear = computed(() => new Date().getFullYear())
 
 // ── Grouped bookmarks (全部模式下按分类分组) ──────────────────────────────────
 const groupedBookmarks = computed(() => {
@@ -284,6 +293,10 @@ watch(() => [store.filteredBookmarks.length, store.activeCategoryId], () => {
   background: var(--color-surface-alt);
 }
 
+.layout > .content {
+  flex: 1;
+}
+
 .content {
   display: flex;
   flex: 1;
@@ -406,6 +419,19 @@ watch(() => [store.filteredBookmarks.length, store.activeCategoryId], () => {
   opacity: 0.9;
   background: var(--color-surface) !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Footer */
+.footer {
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.footer__text {
+  font-size: 12px;
+  color: var(--color-placeholder);
 }
 
 @media (max-width: 768px) {
