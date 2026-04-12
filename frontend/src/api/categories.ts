@@ -21,4 +21,7 @@ export const categoriesApi = {
   remove(id: number) {
     return client.delete(`/categories/${id}`)
   },
+  updateSortOrder(items: { id: number; sort_order: number }[]) {
+    return client.post('/categories/sort/batch', items)
+  },
 }

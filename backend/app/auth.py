@@ -18,11 +18,15 @@ bearer_scheme = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # bcrypt 限制密码长度最多 72 字节
+    password_bytes = password.encode('utf-8')[:72]
+    return pwd_context.hash(password_bytes)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    # bcrypt 限制密码长度最多 72 字节
+    plain_bytes = plain.encode('utf-8')[:72]
+    return pwd_context.verify(plain_bytes, hashed)
 
 
 def create_access_token(user_id: int) -> str:

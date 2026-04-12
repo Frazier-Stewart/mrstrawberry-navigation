@@ -11,6 +11,7 @@
         @add="openCategoryModal(null)"
         @edit="openCategoryModal"
         @delete="confirmDeleteCategory"
+        @sort="handleCategorySort"
       />
 
       <!-- Main area -->
@@ -57,10 +58,11 @@
         </template>
 
         <!-- 单分类：直接平铺 -->
-        <div v-else class="bookmark-grid">
+        <div v-else ref="gridRef" class="bookmark-grid bookmark-grid--sortable">
           <BookmarkCard
             v-for="bm in store.filteredBookmarks"
             :key="bm.id"
+            :data-id="bm.id"
             :bookmark="bm"
             @edit="openBookmarkModal"
             @delete="confirmDeleteBookmark"
@@ -90,12 +92,21 @@
       :loading="confirmLoading"
       @confirm="handleConfirm"
     />
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer__text">
+        Copyright © 2020-{{ currentYear }} 快刀切草莓君 | 互联网ICP备案：闽ICP备18004703号-1
+      </p>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import Sortable from 'sortablejs'
 import { useBookmarksStore } from '@/stores/bookmarks'
+import { bookmarksApi } from '@/api/bookmarks'
+import { categoriesApi } from '@/api/categories'
 import Navbar from '@/components/Navbar.vue'
 import CategoryPanel from '@/components/CategoryPanel.vue'
 import BookmarkCard from '@/components/BookmarkCard.vue'
@@ -109,6 +120,9 @@ import type { Category } from '@/api/categories'
 const store = useBookmarksStore()
 
 onMounted(() => store.fetchAll())
+
+// ── Current year for footer ───────────────────────────────────────────────────
+const currentYear = computed(() => new Date().getFullYear())
 
 // ── Grouped bookmarks (全部模式下按分类分组) ──────────────────────────────────
 const groupedBookmarks = computed(() => {
@@ -201,6 +215,74 @@ async function handleConfirm() {
     confirmAction = null
   }
 }
+
+// ── Sortable: Categories ───────────────────────────────────────────────────────
+async function handleCategorySort(sortedIds: number[]) {
+  const updates = sortedIds.map((id, index) => ({
+    id,
+    sort_order: index,
+  }))
+  
+  try {
+    await categoriesApi.updateSortOrder(updates)
+    await store.fetchAll()
+  } catch (e) {
+    console.error('更新分类排序失败', e)
+    alert('更新排序失败，请重试')
+  }
+}
+
+// ── Sortable: Bookmarks ───────────────────────────────────────────────────────
+const gridRef = ref<HTMLElement | null>(null)
+let bookmarkSortable: Sortable | null = null
+
+function initBookmarkSortable() {
+  if (!gridRef.value || store.activeCategoryId === null) return
+  
+  if (bookmarkSortable) {
+    bookmarkSortable.destroy()
+    bookmarkSortable = null
+  }
+  
+  bookmarkSortable = new Sortable(gridRef.value, {
+    animation: 150,
+    ghostClass: 'bookmark-card--ghost',
+    chosenClass: 'bookmark-card--chosen',
+    dragClass: 'bookmark-card--drag',
+    onEnd: async (evt) => {
+      if (evt.oldIndex === evt.newIndex) return
+      
+      const items = gridRef.value?.querySelectorAll('.bookmark-card')
+      if (!items) return
+      
+      const ids = Array.from(items).map(el => Number(el.getAttribute('data-id')))
+      
+      const updates = ids.map((id, index) => ({
+        id,
+        sort_order: index,
+      }))
+      
+      try {
+        await bookmarksApi.updateSortOrder(updates)
+        await store.fetchAll()
+      } catch (e) {
+        console.error('更新书签排序失败', e)
+        alert('更新排序失败，请重试')
+      }
+    },
+  })
+}
+
+watch(() => [store.filteredBookmarks.length, store.activeCategoryId], () => {
+  nextTick(() => {
+    if (store.activeCategoryId !== null) {
+      initBookmarkSortable()
+    } else if (bookmarkSortable) {
+      bookmarkSortable.destroy()
+      bookmarkSortable = null
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -209,6 +291,10 @@ async function handleConfirm() {
   display: flex;
   flex-direction: column;
   background: var(--color-surface-alt);
+}
+
+.layout > .content {
+  flex: 1;
 }
 
 .content {
@@ -292,8 +378,60 @@ async function handleConfirm() {
 
 .bookmark-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  .bookmark-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .bookmark-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .bookmark-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bookmark-grid--sortable .bookmark-card {
+  cursor: grab;
+}
+.bookmark-grid--sortable .bookmark-card:active {
+  cursor: grabbing;
+}
+
+/* Sortable styles */
+.bookmark-card--ghost {
+  opacity: 0.4;
+  background: var(--color-surface-alt) !important;
+}
+.bookmark-card--chosen {
+  background: var(--color-surface-alt) !important;
+}
+.bookmark-card--drag {
+  opacity: 0.9;
+  background: var(--color-surface) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Footer */
+.footer {
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.footer__text {
+  font-size: 12px;
+  color: var(--color-placeholder);
 }
 
 @media (max-width: 768px) {

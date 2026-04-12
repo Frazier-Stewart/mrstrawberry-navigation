@@ -20,7 +20,11 @@ def _sha256(value: str) -> str:
 def register(body: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(status_code=400, detail="该邮箱已注册")
-    user = User(email=body.email, hashed_pw=hash_password(body.password))
+    user = User(
+        email=body.email,
+        hashed_pw=hash_password(body.password),
+        nickname=body.nickname
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -71,6 +75,19 @@ def change_password(
     current_user.hashed_pw = hash_password(body.new_password)
     db.commit()
     return {"message": "密码已修改"}
+
+
+@router.put("/me", response_model=UserResponse)
+def update_profile(
+    nickname: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """更新用户资料（昵称）"""
+    current_user.nickname = nickname.strip() or None
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.post("/reset-password", status_code=200)
