@@ -175,13 +175,14 @@ function onFaviconError() {
 
 /* 简化模式样式 */
 .simple-link {
-  color: var(--color-primary);
+  color: var(--color-body);
   text-decoration: none;
   font-size: 14px;
   line-height: 1.6;
 }
 
 .simple-link:hover {
+  color: var(--color-primary);
   text-decoration: underline;
 }
 </style>
