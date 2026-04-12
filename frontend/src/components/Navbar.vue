@@ -1,13 +1,16 @@
 <template>
   <header class="navbar">
     <div class="navbar__inner">
-      <RouterLink to="/" class="navbar__logo">导航站</RouterLink>
+      <RouterLink to="/" class="navbar__logo">
+        <img src="/logo.png" alt="logo" class="navbar__logo-img" />
+        <span class="navbar__logo-text">Mr.Strawberry's House</span>
+      </RouterLink>
 
       <div class="navbar__actions">
         <!-- 头像下拉 -->
         <div class="avatar-menu" ref="menuRef">
           <button class="avatar-btn" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen">
-            <span class="avatar-btn__circle">{{ initial }}</span>
+            <span class="avatar-btn__circle">{{ displayInitial }}</span>
             <svg class="avatar-btn__caret" :class="{ 'avatar-btn__caret--open': menuOpen }"
               width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -17,6 +20,7 @@
           <Transition name="dropdown">
             <div v-if="menuOpen" class="dropdown">
               <div class="dropdown__header">
+                <span v-if="auth.displayName" class="dropdown__name">{{ auth.displayName }}</span>
                 <span class="dropdown__email">{{ auth.user?.email ?? '...' }}</span>
               </div>
               <div class="dropdown__divider" />
@@ -64,9 +68,10 @@ function onOutsideClick(e: MouseEvent) {
   }
 }
 
-const initial = computed(() => {
-  const email = auth.user?.email ?? ''
-  return email.charAt(0).toUpperCase() || '?'
+const displayInitial = computed(() => {
+  // 优先使用昵称首字母，其次是邮箱首字母
+  const name = auth.user?.nickname || auth.user?.email || ''
+  return name.charAt(0).toUpperCase() || '?'
 })
 
 function handleLogout() {
@@ -96,12 +101,31 @@ function handleLogout() {
   justify-content: space-between;
 }
 
+/* Custom font for logo */
+@font-face {
+  font-family: 'ClastonScript';
+  src: url('@/assets/fonts/ClastonScript.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
 .navbar__logo {
-  font-size: 16px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.navbar__logo-img {
+  height: 30px;
+  width: auto;
+}
+
+.navbar__logo-text {
+  font-family: 'ClastonScript', cursive;
+  font-size: 20px;
   color: var(--color-heading);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .navbar__actions {
@@ -161,12 +185,23 @@ function handleLogout() {
 
 .dropdown__header {
   padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dropdown__email {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-tertiary);
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

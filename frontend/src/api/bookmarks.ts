@@ -36,4 +36,7 @@ export const bookmarksApi = {
   remove(id: number) {
     return client.delete(`/bookmarks/${id}`)
   },
+  updateSortOrder(items: { id: number; sort_order: number }[]) {
+    return client.post('/bookmarks/sort/batch', items)
+  },
 }

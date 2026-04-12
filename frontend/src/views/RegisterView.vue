@@ -5,6 +5,7 @@
       <p class="auth-card__sub">创建您的导航站账号</p>
 
       <form @submit.prevent="handleSubmit" class="auth-form">
+        <BaseInput label="昵称（可选）" v-model="nickname" type="text" placeholder="您的昵称" :error="errors.nickname" />
         <BaseInput label="邮箱" v-model="email" type="email" placeholder="your@email.com" :error="errors.email" />
         <BaseInput label="密码" v-model="password" type="password" placeholder="至少6位" :error="errors.password" />
         <BaseInput label="确认密码" v-model="confirm" type="password" placeholder="再次输入密码" :error="errors.confirm" />
@@ -32,16 +33,17 @@ import BaseButton from '@/components/BaseButton.vue'
 const router = useRouter()
 const auth = useAuthStore()
 
+const nickname = ref('')
 const email = ref('')
 const password = ref('')
 const confirm = ref('')
 const loading = ref(false)
 const serverError = ref('')
 const success = ref(false)
-const errors = ref({ email: '', password: '', confirm: '' })
+const errors = ref({ nickname: '', email: '', password: '', confirm: '' })
 
 async function handleSubmit() {
-  errors.value = { email: '', password: '', confirm: '' }
+  errors.value = { nickname: '', email: '', password: '', confirm: '' }
   serverError.value = ''
 
   if (!email.value) { errors.value.email = '请输入邮箱'; return }
@@ -50,7 +52,7 @@ async function handleSubmit() {
 
   loading.value = true
   try {
-    await auth.register(email.value, password.value)
+    await auth.register(email.value, password.value, nickname.value || undefined)
     success.value = true
     setTimeout(() => router.push('/login'), 1200)
   } catch (e: any) {

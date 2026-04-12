@@ -5,6 +5,7 @@ from database import get_db
 from app.models import User, Bookmark
 from app.schemas import BookmarkCreate, BookmarkUpdate, BookmarkResponse
 from app.auth import get_current_user
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/bookmarks", tags=["bookmarks"])
 
@@ -62,3 +63,25 @@ def delete_bookmark(
         raise HTTPException(status_code=404, detail="书签不存在")
     db.delete(bm)
     db.commit()
+
+
+# ── Batch sort order update ────────────────────────────────────────────────────
+
+class BookmarkSortItem(BaseModel):
+    id: int
+    sort_order: int
+
+
+@router.post("/sort/batch", status_code=status.HTTP_200_OK)
+def update_bookmarks_sort_order(
+    items: List[BookmarkSortItem],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """批量更新书签排序"""
+    for item in items:
+        bm = db.query(Bookmark).filter(Bookmark.id == item.id, Bookmark.owner_id == current_user.id).first()
+        if bm:
+            bm.sort_order = item.sort_order
+    db.commit()
+    return {"success": True, "updated": len(items)}

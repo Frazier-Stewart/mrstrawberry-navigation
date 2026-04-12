@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card bookmark-card" :data-id="bookmark.id">
     <a :href="bookmark.url" target="_blank" rel="noopener noreferrer" class="card__link">
       <img
         class="card__favicon"
@@ -51,9 +51,11 @@ const defaultFavicon = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/sv
 
 const displayUrl = computed(() => {
   try {
-    return new URL(props.bookmark.url).hostname.replace('www.', '')
+    const hostname = new URL(props.bookmark.url).hostname.replace('www.', '')
+    return hostname.length > 20 ? hostname.slice(0, 20) + '...' : hostname
   } catch {
-    return props.bookmark.url
+    const url = props.bookmark.url
+    return url.length > 20 ? url.slice(0, 20) + '...' : url
   }
 })
 
@@ -103,7 +105,7 @@ function onFaviconError() {
 }
 
 .card__title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--color-heading);
   white-space: nowrap;
@@ -138,4 +140,19 @@ function onFaviconError() {
 }
 .card__icon-btn:hover { color: var(--color-body); }
 .card__icon-btn--danger:hover { color: var(--color-error); }
+
+/* Sortable drag styles */
+.bookmark-card--ghost {
+  opacity: 0.4;
+  background: var(--color-surface-alt);
+}
+.bookmark-card--chosen {
+  background: var(--color-surface-alt);
+}
+.bookmark-card--drag {
+  opacity: 0.9;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  cursor: grabbing;
+}
 </style>

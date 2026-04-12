@@ -8,12 +8,14 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    nickname: Optional[str] = None
 
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     email: str
+    nickname: Optional[str]
     is_active: bool
     created_at: datetime
 

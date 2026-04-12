@@ -5,6 +5,7 @@ from app.models import User, Category
 from app.schemas import CategoryCreate, CategoryUpdate, CategoryResponse
 from app.auth import get_current_user
 from typing import List
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -72,3 +73,25 @@ def delete_category(
         raise HTTPException(status_code=404, detail="分类不存在")
     db.delete(cat)
     db.commit()
+
+
+# ── Batch sort order update ────────────────────────────────────────────────────
+
+class CategorySortItem(BaseModel):
+    id: int
+    sort_order: int
+
+
+@router.post("/sort/batch", status_code=status.HTTP_200_OK)
+def update_categories_sort_order(
+    items: List[CategorySortItem],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """批量更新分类排序"""
+    for item in items:
+        cat = db.query(Category).filter(Category.id == item.id, Category.owner_id == current_user.id).first()
+        if cat:
+            cat.sort_order = item.sort_order
+    db.commit()
+    return {"success": True, "updated": len(items)}

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from database import engine, Base
-from app.routers import auth, categories, bookmarks
+from app.routers import auth, categories, bookmarks, export_import
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(categories.router)
 app.include_router(bookmarks.router)
+app.include_router(export_import.router)
 
 
 @app.get("/health")

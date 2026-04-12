@@ -7,6 +7,13 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserResponse | null>(null)
 
   const isAuthenticated = computed(() => !!token.value)
+  
+  // 显示名称：优先使用昵称，其次是邮箱前缀
+  const displayName = computed(() => {
+    if (user.value?.nickname) return user.value.nickname
+    if (user.value?.email) return user.value.email.split('@')[0]
+    return ''
+  })
 
   function initFromStorage() {
     const stored = localStorage.getItem('access_token')
@@ -24,8 +31,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('access_token', res.data.access_token)
   }
 
-  async function register(email: string, password: string) {
-    await authApi.register(email, password)
+  async function register(email: string, password: string, nickname?: string) {
+    await authApi.register(email, password, nickname)
+  }
+  
+  async function updateProfile(nickname: string) {
+    const res = await authApi.updateProfile(nickname)
+    user.value = res.data
   }
 
   function logout() {
@@ -34,5 +46,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('access_token')
   }
 
-  return { token, user, isAuthenticated, initFromStorage, fetchMe, login, register, logout }
+  return { 
+    token, 
+    user, 
+    isAuthenticated, 
+    displayName,
+    initFromStorage, 
+    fetchMe, 
+    login, 
+    register, 
+    updateProfile,
+    logout 
+  }
 })
