@@ -40,35 +40,8 @@
       </div>
     </div>
 
-    <!-- 收起模式：简洁图标列表 -->
-    <ul v-if="collapsed" class="panel__list panel__list--collapsed">
-      <li>
-        <button
-          :class="['panel__item panel__item--icon', { 'panel__item--active': activeId === null }]"
-          @click="$emit('select', null)"
-          title="全部"
-        >
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-          </svg>
-        </button>
-      </li>
-      <li v-for="cat in categories" :key="cat.id">
-        <button
-          :class="['panel__item panel__item--icon', { 'panel__item--active': activeId === cat.id }]"
-          @click="$emit('select', cat.id)"
-          :title="cat.name"
-        >
-          <span class="panel__initial">{{ cat.name.charAt(0).toUpperCase() }}</span>
-        </button>
-      </li>
-    </ul>
-
     <!-- 正常模式：简洁列表 -->
-    <ul v-else-if="!sortMode" class="panel__list">
+    <ul v-if="!collapsed && !sortMode" class="panel__list">
       <li>
         <button
           :class="['panel__item', { 'panel__item--active': activeId === null }]"
@@ -100,7 +73,7 @@
     </ul>
 
     <!-- 排序模式：整个区域可拖拽 -->
-    <ul v-else ref="sortListRef" class="panel__list panel__list--sort">
+    <ul v-else-if="!collapsed && sortMode" ref="sortListRef" class="panel__list panel__list--sort">
       <li class="panel__tip">拖拽调整顺序</li>
       <li
         v-for="cat in categories"
@@ -151,12 +124,16 @@ let sortable: Sortable | null = null
 
 function toggleCollapse() {
   collapsed.value = !collapsed.value
-  // 收起时退出排序模式
-  if (collapsed.value && sortMode.value) {
-    sortMode.value = false
-    if (sortable) {
-      sortable.destroy()
-      sortable = null
+  // 收起时切换到全部分类
+  if (collapsed.value) {
+    emit('select', null)
+    // 收起时退出排序模式
+    if (sortMode.value) {
+      sortMode.value = false
+      if (sortable) {
+        sortable.destroy()
+        sortable = null
+      }
     }
   }
 }
@@ -269,44 +246,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-/* Collapsed mode */
-.panel__list--collapsed {
-  align-items: center;
-  padding: 0 8px;
-}
-
-.panel__list--collapsed li {
-  width: 100%;
-}
-
-.panel__item--icon {
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.panel__initial {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-surface-alt);
-  color: var(--color-body);
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.panel__item--active .panel__initial {
-  background: var(--color-primary);
-  color: #fff;
 }
 
 .panel__tip {
