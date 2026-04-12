@@ -1,5 +1,19 @@
 <template>
-  <div class="card bookmark-card" :data-id="bookmark.id">
+  <!-- 简化模式：纯文字链接 -->
+  <template v-if="simple">
+    <a 
+      :href="bookmark.url" 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      class="simple-link"
+      :data-id="bookmark.id"
+    >
+      {{ bookmark.title }}
+    </a>
+  </template>
+  
+  <!-- 正常模式：卡片 -->
+  <div v-else class="card bookmark-card" :data-id="bookmark.id">
     <a :href="bookmark.url" target="_blank" rel="noopener noreferrer" class="card__link">
       <img
         class="card__favicon"
@@ -31,7 +45,10 @@
 import { computed, ref } from 'vue'
 import type { Bookmark } from '@/api/bookmarks'
 
-const props = defineProps<{ bookmark: Bookmark }>()
+const props = defineProps<{ 
+  bookmark: Bookmark
+  simple?: boolean
+}>()
 defineEmits<{ edit: [b: Bookmark]; delete: [b: Bookmark] }>()
 
 const faviconError = ref(false)
@@ -154,5 +171,17 @@ function onFaviconError() {
   background: var(--color-surface);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   cursor: grabbing;
+}
+
+/* 简化模式样式 */
+.simple-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.simple-link:hover {
+  text-decoration: underline;
 }
 </style>

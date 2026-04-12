@@ -44,7 +44,19 @@
             <hr v-if="idx > 0" class="group-divider" />
             <div class="group">
               <h3 class="group__name">{{ group.name }}</h3>
-              <div class="bookmark-grid">
+              <!-- 简化模式：文字列表 -->
+              <div v-if="store.isSimpleMode" class="simple-list">
+                <BookmarkCard
+                  v-for="(bm, bidx) in group.bookmarks"
+                  :key="bm.id"
+                  :bookmark="bm"
+                  :simple="true"
+                  @edit="openBookmarkModal"
+                  @delete="confirmDeleteBookmark"
+                />
+              </div>
+              <!-- 正常模式：网格卡片 -->
+              <div v-else class="bookmark-grid">
                 <BookmarkCard
                   v-for="bm in group.bookmarks"
                   :key="bm.id"
@@ -58,6 +70,18 @@
         </template>
 
         <!-- 单分类：直接平铺 -->
+        <!-- 简化模式：文字列表 -->
+        <div v-else-if="store.isSimpleMode" class="simple-list">
+          <BookmarkCard
+            v-for="(bm, idx) in store.filteredBookmarks"
+            :key="bm.id"
+            :bookmark="bm"
+            :simple="true"
+            @edit="openBookmarkModal"
+            @delete="confirmDeleteBookmark"
+          />
+        </div>
+        <!-- 正常模式：网格卡片 -->
         <div v-else ref="gridRef" class="bookmark-grid bookmark-grid--sortable">
           <BookmarkCard
             v-for="bm in store.filteredBookmarks"
@@ -405,6 +429,18 @@ watch(() => [store.filteredBookmarks.length, store.activeCategoryId], () => {
 }
 .bookmark-grid--sortable .bookmark-card:active {
   cursor: grabbing;
+}
+
+/* 简化模式：文字列表 */
+.simple-list {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--color-body);
+}
+
+.simple-list > a::after {
+  content: '  ';
+  white-space: pre;
 }
 
 /* Sortable styles */

@@ -13,11 +13,11 @@
           @click="store.toggleViewMode()" 
           :title="store.isSimpleMode ? '切换到正常版' : '切换到简化版'"
         >
-          <!-- 简化版图标 (列表) -->
-          <svg v-if="store.isSimpleMode" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <!-- 正常视图显示列表图标（点击切换到简化版） -->
+          <svg v-if="!store.isSimpleMode" width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <!-- 正常版图标 (网格) -->
+          <!-- 简化视图显示网格图标（点击切换到正常版） -->
           <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
             <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
             <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
