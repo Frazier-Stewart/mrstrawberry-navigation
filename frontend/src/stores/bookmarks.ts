@@ -3,11 +3,23 @@ import { ref, computed } from 'vue'
 import { bookmarksApi, type Bookmark, type BookmarkCreate } from '@/api/bookmarks'
 import { categoriesApi, type Category } from '@/api/categories'
 
+export type ViewMode = 'card' | 'simple'
+
 export const useBookmarksStore = defineStore('bookmarks', () => {
   const bookmarks = ref<Bookmark[]>([])
   const categories = ref<Category[]>([])
   const activeCategoryId = ref<number | null>(null)
   const loading = ref(false)
+  
+  // 视图模式：card = 卡片网格, simple = 简化文字列表
+  const viewMode = ref<ViewMode>((localStorage.getItem('view_mode') as ViewMode) || 'card')
+  
+  const isSimpleMode = computed(() => viewMode.value === 'simple')
+  
+  function toggleViewMode() {
+    viewMode.value = viewMode.value === 'card' ? 'simple' : 'card'
+    localStorage.setItem('view_mode', viewMode.value)
+  }
 
   const filteredBookmarks = computed(() => {
     if (activeCategoryId.value === null) return bookmarks.value
@@ -79,6 +91,8 @@ export const useBookmarksStore = defineStore('bookmarks', () => {
     categories,
     activeCategoryId,
     loading,
+    viewMode,
+    isSimpleMode,
     filteredBookmarks,
     fetchAll,
     fetchCategories,
@@ -89,5 +103,6 @@ export const useBookmarksStore = defineStore('bookmarks', () => {
     updateBookmark,
     deleteBookmark,
     setActiveCategory,
+    toggleViewMode,
   }
 })
