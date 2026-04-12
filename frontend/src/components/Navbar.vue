@@ -7,6 +7,24 @@
       </RouterLink>
 
       <div class="navbar__actions">
+        <!-- 视图模式切换按钮 -->
+        <button
+          class="view-mode-toggle"
+          @click="toggleViewMode"
+          :title="viewMode.isCompact ? '切换到正常版' : '切换到简化版'"
+        >
+          <svg v-if="viewMode.isNormal" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="3" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="2" y="9" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="9" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="view-mode-toggle__text">{{ viewMode.isNormal ? '简化' : '正常' }}</span>
+        </button>
+
         <!-- 头像下拉 -->
         <div class="avatar-menu" ref="menuRef">
           <button class="avatar-btn" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen">
@@ -49,9 +67,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useViewModeStore } from '@/stores/viewMode'
 import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
+const viewMode = useViewModeStore()
 const router = useRouter()
 const menuOpen = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -78,6 +98,10 @@ function handleLogout() {
   menuOpen.value = false
   auth.logout()
   router.push('/login')
+}
+
+function toggleViewMode() {
+  viewMode.toggle()
 }
 </script>
 
@@ -131,6 +155,32 @@ function handleLogout() {
 .navbar__actions {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+/* View mode toggle */
+.view-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-btn);
+  transition: all var(--transition);
+  color: var(--color-body);
+  font-size: 13px;
+}
+.view-mode-toggle:hover {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border-subtle);
+}
+.view-mode-toggle svg {
+  color: var(--color-tertiary);
+}
+.view-mode-toggle__text {
+  font-weight: 500;
 }
 
 /* Avatar button */

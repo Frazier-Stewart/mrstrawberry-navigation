@@ -1,5 +1,18 @@
 <template>
-  <div class="card bookmark-card" :data-id="bookmark.id">
+  <!-- 简化版：纯文字链接 -->
+  <a
+    v-if="isCompact"
+    :href="bookmark.url"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="compact-link"
+    :title="bookmark.title"
+  >
+    {{ displayUrl }}
+  </a>
+
+  <!-- 正常版：卡片 -->
+  <div v-else class="card bookmark-card" :data-id="bookmark.id">
     <a :href="bookmark.url" target="_blank" rel="noopener noreferrer" class="card__link">
       <img
         class="card__favicon"
@@ -29,10 +42,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useViewModeStore } from '@/stores/viewMode'
 import type { Bookmark } from '@/api/bookmarks'
 
 const props = defineProps<{ bookmark: Bookmark }>()
 defineEmits<{ edit: [b: Bookmark]; delete: [b: Bookmark] }>()
+
+const viewMode = useViewModeStore()
+const isCompact = computed(() => viewMode.isCompact)
 
 const faviconError = ref(false)
 
@@ -154,5 +171,21 @@ function onFaviconError() {
   background: var(--color-surface);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   cursor: grabbing;
+}
+
+/* Compact mode link */
+.compact-link {
+  font-size: 14px;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.compact-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
 }
 </style>

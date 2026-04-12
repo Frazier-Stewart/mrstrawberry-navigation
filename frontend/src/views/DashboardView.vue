@@ -44,7 +44,7 @@
             <hr v-if="idx > 0" class="group-divider" />
             <div class="group">
               <h3 class="group__name">{{ group.name }}</h3>
-              <div class="bookmark-grid">
+              <div :class="['bookmark-grid', { 'bookmark-grid--compact': viewMode.isCompact }]">
                 <BookmarkCard
                   v-for="bm in group.bookmarks"
                   :key="bm.id"
@@ -58,7 +58,7 @@
         </template>
 
         <!-- 单分类：直接平铺 -->
-        <div v-else ref="gridRef" class="bookmark-grid bookmark-grid--sortable">
+        <div v-else ref="gridRef" :class="['bookmark-grid', 'bookmark-grid--sortable', { 'bookmark-grid--compact': viewMode.isCompact }]">
           <BookmarkCard
             v-for="bm in store.filteredBookmarks"
             :key="bm.id"
@@ -105,6 +105,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import Sortable from 'sortablejs'
 import { useBookmarksStore } from '@/stores/bookmarks'
+import { useViewModeStore } from '@/stores/viewMode'
 import { bookmarksApi } from '@/api/bookmarks'
 import { categoriesApi } from '@/api/categories'
 import Navbar from '@/components/Navbar.vue'
@@ -118,6 +119,7 @@ import type { Bookmark } from '@/api/bookmarks'
 import type { Category } from '@/api/categories'
 
 const store = useBookmarksStore()
+const viewMode = useViewModeStore()
 
 onMounted(() => store.fetchAll())
 
@@ -382,20 +384,28 @@ watch(() => [store.filteredBookmarks.length, store.activeCategoryId], () => {
   gap: 12px;
 }
 
+/* Compact mode: inline text list */
+.bookmark-grid--compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  align-items: center;
+}
+
 @media (max-width: 1200px) {
-  .bookmark-grid {
+  .bookmark-grid:not(.bookmark-grid--compact) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 900px) {
-  .bookmark-grid {
+  .bookmark-grid:not(.bookmark-grid--compact) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 600px) {
-  .bookmark-grid {
+  .bookmark-grid:not(.bookmark-grid--compact) {
     grid-template-columns: 1fr;
   }
 }
