@@ -258,7 +258,7 @@ const importLoading = ref(false)
 const importMode = ref<'merge' | 'replace'>('merge')
 const selectedFile = ref<File | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
-const importResult = ref<{ error?: string; imported_categories?: number; imported_bookmarks?: number; errors?: string[] } | null>(null)
+const importResult = ref<{ error?: string; imported_categories?: number; imported_bookmarks?: number; errors?: string[] | null; success?: boolean; version?: string } | null>(null)
 
 function handleExport() {
   exportLoading.value = true
